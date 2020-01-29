@@ -1,0 +1,30 @@
+@import "./metadata.css";
+@import "./menu.css";
+@import "./svg.css";
+
+html,
+body {
+    display: block;
+    height: 100%;
+    width: 100%;
+    background: #deddd3;
+    color: #333333;
+    overflow: hidden;
+    font-family: Raleway, Arial, Helvetica, sans-serif;
+    font-size: 14px;
+    margin: 0;
+    padding: 0;
+}
+
+#container {
+    display: flex;
+    justify-content: center;
+    height: 100%;
+    width: 100%;
+}
+
+.welcome {
+    margin: auto;
+}
+
+

@@ -21,7 +21,7 @@
 	},
 	"repository": {
 		"type": "git",
-		"url": "https://fliptopbox@bitbucket.org/fliptopbox/lifedrawing.git"
+		"url": "git@github.com:fliptopbox/lifedrawing.git"
 	},
 	"keywords": [
 		"svg",

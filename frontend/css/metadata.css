@@ -1,0 +1,40 @@
+
+.meta {
+    position: absolute;
+    left: 0;
+    right: 0;
+    top: auto;
+    bottom: 0;
+    z-index: 1;
+}
+
+.meta-no {
+    position: absolute;
+    bottom: 0;
+    right: 0;
+    font-size: 10em;
+}
+
+.meta-title {
+    position: absolute;
+    bottom: 0;
+    right: 0;
+    font-size: 5em;
+}
+
+.meta-desc {
+    position: absolute;
+    bottom: 0;
+    right: 0;
+    font-size: 2em;
+}
+
+.meta-percent {
+    position: absolute;
+    bottom: 0;
+    left: 0;
+    font-size: 1em;
+    height: 5px;
+    width: var(--percent, 0);
+    background-color: red;
+}
