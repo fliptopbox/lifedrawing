@@ -1,5 +1,6 @@
 import Metadata from './Metadata.js';
 import SVG from './SVG.js';
+import highlights from './highlights.js';
 
 class UI {
     constructor(ws) {
@@ -16,17 +17,26 @@ class UI {
         this.busy = null; // prevent UI events while working
         this.auto = 0; // delay in ms for auto-next
         this.timer; // the timeout manager
+        this.highlight = true;
         this.showMenu = false;
         this.ws = ws;
 
         this.svg.notify('ui', this.sketchComplete);
         this.svg.handleClick(this.toggle);
 
+        this.highlights = highlights;
+
         window.UI = this;
     }
 
-    sketchComplete = e => {
-        console.log('sketchComplete', e);
+    sketchComplete = () => {
+        if (this.highlight) {
+            highlights(30, 0.5, "#000000cc");
+            highlights(20, 3);
+            highlights(10, 15);
+            highlights(5, 45);
+        }
+
         this.busy = false;
         if (this.auto) {
             const fn = () => this.next(1);
@@ -47,19 +57,25 @@ class UI {
 
     toggle = () => {
         // show or hide the gallery menu
-        console.log(this.menu);
 
         const reverse = !this.showMenu;
         const method = reverse ? 'remove' : 'add';
+        const blur = !reverse ? 'remove' : 'add';
         this.menu.classList[method]('menu-hide');
         this.showMenu = reverse;
+        this.container.classList[blur]('svg-blur');
     };
 
     update(collection) {
         // this is only called once
         const callback = this.hanleOnClick;
-        const fn = array => this.template(array, callback);
-        this.gallery = Object.entries(collection).map(fn);
+        const entries = Object.entries(collection);
+        const max = entries.reduce(
+            (acc, curr) => (curr[1].size > acc ? curr[1].size : acc),
+            0
+        );
+        const fn = array => this.template(array, max, callback);
+        this.gallery = entries.map(fn);
         this.gallery.forEach(el => this.menu.append(el));
 
         this.getHashValue();
@@ -149,7 +165,7 @@ class UI {
         const toggle = document.createElement('div');
 
         menu.classList.add('menu');
-        sketches.classList.add('menu-sketches', 'menu-hide');
+        sketches.classList.add('menu-sketches', 'menu-hide', 'circles');
         toggle.classList.add('menu-toggle');
         toggle.onclick = this.toggle;
 
@@ -158,23 +174,28 @@ class UI {
         return sketches;
     }
 
-    template([_, value], handleClick) {
+    template([_, value], max, handleClick) {
         const { name, size, index, no } = value;
         const a = document.createElement('a');
         const MBytes = Number(size / 1024 / 1024).toFixed(2);
+        const sizes = ['zero', 'one', 'two', 'three', 'four', 'five'];
+
+        const n = (Math.ceil((size / max) * 6) >> 0) - 1;
+        const radius = sizes[n];
 
         a.id = `${name}`;
         a.href = `#${no}`;
         a.dataset.no = `${no}`;
         a.dataset.index = `${index}`;
-        a.classList.add('menu-sketch');
+        // a.classList.add('menu-sketch');
+        a.classList.add('rings', 'inline', radius);
         a.onclick = e => {
             handleClick(e, () => a.classList.add('menu-viewed'));
         };
 
         a.innerHTML = `
         <div class="menu-item">
-            <strong class="menu-no">${no}</strong>
+            <em class="menu-no">${no}</em>
             <em class="menu-bytes">${MBytes}MB</em>
         </div>`;
 

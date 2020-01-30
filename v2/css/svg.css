@@ -15,3 +15,8 @@ svg {
 .svg-title {
     display: none;
 }
+
+.svg-blur svg {
+    filter: blur(25px);
+    transition: 150ms filter ease-in;
+}

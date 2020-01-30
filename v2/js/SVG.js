@@ -47,7 +47,9 @@ class SVG {
                 this.svg.onclick = (e) => this.click(e);
                 break;
 
-            // case 'title': // removed - it behaves as a tooltip on hover
+            case 'title': // removed - it behaves as a tooltip on hover
+                break;
+
             case 'defs':
             case 'desc':
                 const tag = getSvgElement(type, String( value || "" ), [`svg-${type}`] );

@@ -1,6 +1,7 @@
 @import "./metadata.css";
 @import "./menu.css";
 @import "./svg.css";
+@import "./rings.css";
 
 html,
 body {
@@ -25,6 +26,7 @@ body {
 
 .welcome {
     margin: auto;
+    max-width: 40%;
 }
 
 
