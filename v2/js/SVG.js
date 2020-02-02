@@ -34,7 +34,7 @@ class SVG {
         switch (type || 'unknown') {
             case 'init':
                 let old = this.container.querySelector('svg');
-                this.container.removeChild(old);
+                if(old) this.container.removeChild(old);
                 this.filename = id;
                 this.size = size;
                 break;

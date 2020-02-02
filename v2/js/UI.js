@@ -8,30 +8,53 @@ class UI {
 
         this.gallery = [];
 
-        this.menu = this.makeMenu(this.container, this.hanleOnClick);
-        this.metadata = new Metadata(this.container);
-        this.svg = new SVG(this.container);
-
-        this.welcome = 5000;
+        this.backgrounds = ['none', 'plywood', 'newsprint'];
         this.current = null; // array index of current sketch
         this.busy = null; // prevent UI events while working
         this.auto = 0; // delay in ms for auto-next
         this.timer; // the timeout manager
-        this.highlight = true;
+        this.bg = 0; // the index for BG images
+        this.initDelay = 5000; // the pause before minimal is applied
+        this.highlightOn = true;
         this.showMenu = false;
         this.ws = ws;
+
+        this.highlights = highlights;
+
+        this.svg = new SVG(this.container);
+        this.menu = this.makeMenu(this.container, this.hanleOnClick);
+        this.metadata = new Metadata(this.container);
 
         this.svg.notify('ui', this.sketchComplete);
         this.svg.handleClick(this.toggle);
 
-        this.highlights = highlights;
+        this.initialize();
 
         window.UI = this;
     }
 
+    initialize() {
+        // make fullscreen interface
+        // load the first sketch
+        // show the labels for a while then
+        // goto minimal view
+
+        const welcome = document.querySelector('.welcome');
+        const menu = document.querySelector('.menu');
+        const minimal = () => menu.classList.add('minimal');
+
+        welcome.onclick = () => {
+            document.documentElement.requestFullscreen();
+            menu.classList.add('label-show');
+            welcome.parentNode.removeChild(welcome);
+            setTimeout(minimal, this.initDelay);
+            this.load();
+        };
+    }
+
     sketchComplete = () => {
-        if (this.highlight) {
-            highlights(30, 0.5, "#000000cc");
+        if (this.highlightOn) {
+            highlights(30, 0.5, '#000000cc');
             highlights(20, 3);
             highlights(10, 15);
             highlights(5, 45);
@@ -49,7 +72,8 @@ class UI {
         if (this.busy) return false;
 
         const el = e.currentTarget;
-        this.current = Number(el.dataset.index);
+        this.setCurrent(Number(el.dataset.index));
+
         this.toggle();
         this.load();
         onSuccess();
@@ -58,6 +82,7 @@ class UI {
     toggle = () => {
         // show or hide the gallery menu
 
+        document.documentElement.requestFullscreen();
         const reverse = !this.showMenu;
         const method = reverse ? 'remove' : 'add';
         const blur = !reverse ? 'remove' : 'add';
@@ -74,13 +99,15 @@ class UI {
             (acc, curr) => (curr[1].size > acc ? curr[1].size : acc),
             0
         );
-        const fn = array => this.template(array, max, callback);
+        const fn = array => this.sketchItems(array, max, callback);
         this.gallery = entries.map(fn);
         this.gallery.forEach(el => this.menu.append(el));
 
         this.getHashValue();
         this.getCurrent();
-        this.load();
+
+        // the gallery is ready
+        // this.load();
     }
 
     getHashValue() {
@@ -100,13 +127,25 @@ class UI {
         this.current = hash;
     }
 
+    setCurrent(index) {
+        // remove prev "current"
+        if (this.current !== null) {
+            this.gallery[this.current].classList.remove('current');
+            this.gallery[this.current].classList.add('menu-viewed');
+        }
+
+        // flag the current sketch element
+        this.current = Number(index);
+        this.gallery[this.current].classList.add('current');
+        return this.current;
+    }
+
     getCurrent() {
         let current = this.current || null;
         const no = ((Math.random() * this.gallery.length) >> 0) + 1;
         current = typeof current === 'number' ? this.current : no;
 
-        this.current = current;
-        return current;
+        return this.setCurrent(current);
     }
 
     play = (delay = 5000) => {
@@ -122,35 +161,29 @@ class UI {
 
         const len = this.gallery.length;
         const index = this.current;
-        const next = (index + inc) % len;
+        let next = (index + inc) % len;
+        next = next < 0 ? len : next;
 
-        this.current = next < 0 ? len : next;
+        window.location.hash = next + 1;
+        this.setCurrent(next);
         this.load();
     };
 
     load() {
-        const { welcome, ws, current } = this;
+        const { ws, current } = this;
 
         if (ws && ws.readyState !== 1) {
             console.error('WebSocket not ready');
             return;
         }
 
-        const fn = () => {
-            window.location.hash = current + 1;
-            ws.send(`load:${current + 1}`);
-            this.welcome = 0; // remove the inital load delay
-        };
+        ws.send(`load:${current + 1}`);
 
         console.log(
             'READY current:%s readyState:%s delay(%s)',
             current,
-            ws.readyState,
-            welcome
+            ws.readyState
         );
-
-        // wait a moment for the welcome screen to be read
-        setTimeout(fn, welcome);
     }
 
     draw(data) {
@@ -162,19 +195,84 @@ class UI {
     makeMenu(container) {
         const menu = document.createElement('div');
         const sketches = document.createElement('div');
-        const toggle = document.createElement('div');
+        const showHighlights = this.highlightOn;
+        const resetAutoPlay = () => {
+            this.play(null);
+            document.querySelector('.label-play strong').innerHTML = 'play';
+        };
+
+        const nav = {
+            highlights: [
+                showHighlights ? '(on)' : '(off)',
+                e => {
+                    const txt = e.currentTarget.querySelector('.label-name');
+                    this.highlightOn = !this.highlightOn;
+                    txt.innerHTML =
+                        'highlights ' + (this.highlightOn ? '(on)' : '(off)');
+                }
+            ],
+            next: [
+                null,
+                () => {
+                    this.play(null);
+                    this.next(1);
+                }
+            ],
+            play: [
+                null,
+                e => {
+                    const txt = e.currentTarget.querySelector('.label-name');
+                    const delay = !this.auto ? 8000 : 0;
+                    txt.innerHTML = delay ? 'stop' : 'play';
+                    this.play(delay);
+                }
+            ],
+            previous: [
+                null,
+                () => {
+                    resetAutoPlay();
+                    this.next(-1);
+                }
+            ],
+            canvas: [
+                null,
+                () => {
+                    const bgs = this.backgrounds;
+                    let index = (this.bg + 1) % bgs.length;
+                    this.bg = index;
+                    document.querySelector('body').className = bgs[index];
+                }
+            ]
+        };
 
         menu.classList.add('menu');
         sketches.classList.add('menu-sketches', 'menu-hide', 'circles');
-        toggle.classList.add('menu-toggle');
-        toggle.onclick = this.toggle;
+        // toggle.classList.add('menu-toggle');
+        // toggle.onclick = this.toggle;
 
-        menu.append(toggle);
+        // menu.append(toggle);
         container.append(menu, sketches);
+
+        Object.entries(nav).forEach(array => {
+            const el = document.createElement('div');
+            const [name, attrs] = array;
+            const [value = '', fn] = attrs;
+
+            console.log(attrs);
+
+            const text = value !== null ? value : '';
+            el.classList.add('menu-' + name);
+            el.onclick = fn;
+            el.innerHTML = `<div class="label label-${name}">
+                <strong class="label-name">${name} ${text}</strong>
+                <em class="label-dot"></em></div>`;
+            menu.append(el);
+        });
+
         return sketches;
     }
 
-    template([_, value], max, handleClick) {
+    sketchItems([_, value], max, handleClick) {
         const { name, size, index, no } = value;
         const a = document.createElement('a');
         const MBytes = Number(size / 1024 / 1024).toFixed(2);
@@ -187,7 +285,7 @@ class UI {
         a.href = `#${no}`;
         a.dataset.no = `${no}`;
         a.dataset.index = `${index}`;
-        // a.classList.add('menu-sketch');
+        a.innerHTML = `<i>${no}</i>`;
         a.classList.add('rings', 'inline', radius);
         a.onclick = e => {
             handleClick(e, () => a.classList.add('menu-viewed'));
