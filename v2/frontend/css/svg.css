@@ -1,0 +1,22 @@
+
+
+svg {
+    max-height: 92%;
+    width: 94%;
+    height: auto;
+    margin: 4% 3%;
+}
+
+.svg-path {
+    stroke: black;
+    stroke-width: 0.15;
+    fill: none;
+}
+.svg-title {
+    display: none;
+}
+
+.svg-blur svg {
+    filter: blur(25px);
+    transition: 150ms filter ease-in;
+}

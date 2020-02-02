@@ -1,1 +1,1 @@
-web: node js/parseSvg.js
+web: node backend/index.js
