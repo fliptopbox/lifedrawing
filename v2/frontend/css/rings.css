@@ -45,6 +45,26 @@
     overflow: hidden;
     font-size: 10px;
 }
+.rings.current:after,
+.rings.current:before {
+    content: "";
+    position: absolute;
+    width: 4px;
+    height: 16px;
+    background: black;
+    display: block;
+    margin: 50%;
+    transform: translate(-2px, -8px) rotate(45deg);
+    z-index: 1;
+    transform-origin: center center;
+}
+
+.rings.current:after {
+    transform: translate(-2px, -8px) rotate(-45deg);
+}
+
+
+.rings.current .menu-item { opacity: 0; }
 
 /* the BG ring background */
 .rings {

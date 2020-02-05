@@ -85,7 +85,19 @@ class UI {
         if (this.busy) return false;
 
         const el = e.currentTarget;
-        this.setCurrent(Number(el.dataset.index));
+        const { index } = el.dataset;
+
+        // if the user clicks the current image
+        // close the overlay. No load neccissary
+        console.log("<<<<<", el);
+        if(Number(index) === this.current) {
+            this.menu.classList.add("menu-hide");
+            this.container.classList.remove("svg-blur");
+            return;
+        }
+
+
+        this.setCurrent(Number(index));
 
         this.toggle();
         this.load();
