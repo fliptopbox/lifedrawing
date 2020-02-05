@@ -1,8 +1,9 @@
 .menu {
-    bottom: 0;
-    position: absolute;
-    left: 0;
-    z-index: 2;
+    /* bottom: 0; */
+    /* position: absolute; */
+    /* left: 0; */
+    z-index: 5;
+    /* background: red; */
 }
 
 .menu-toggle {
@@ -23,7 +24,7 @@
     bottom: 0;
     top: 0;
     right: 0;
-    z-index: 10;
+    z-index: 2;
     padding: 6%;
     overflow-y: auto;
 }

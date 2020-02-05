@@ -6,6 +6,7 @@
     top: auto;
     bottom: 0;
     z-index: 1;
+    background: red;
 }
 
 /* roman numerals */

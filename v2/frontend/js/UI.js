@@ -81,35 +81,35 @@ class UI {
     };
 
     hanleOnClick = (e, onSuccess) => {
-        // e.preventDefault();
         if (this.busy) return false;
 
         const el = e.currentTarget;
         const { index } = el.dataset;
 
         // if the user clicks the current image
-        // close the overlay. No load neccissary
-        console.log("<<<<<", el);
-        if(Number(index) === this.current) {
-            this.menu.classList.add("menu-hide");
-            this.container.classList.remove("svg-blur");
-            return;
+        // close the overlay. No re-load neccissary
+
+        if(Number(index) !== this.current) {
+            this.setCurrent(Number(index));
+            this.load();
         }
 
-
-        this.setCurrent(Number(index));
-
         this.toggle();
-        this.load();
         onSuccess();
     };
 
-    toggle = () => {
-        // show or hide the gallery menu
+    toggle = (force = null) => {
+        // toggle the state switch for the menu visibility
+        // -OR- force it into a state
 
-        const reverse = !this.showMenu;
-        const method = reverse ? 'remove' : 'add';
-        const blur = !reverse ? 'remove' : 'add';
+        let reverse = !this.showMenu;
+
+        if(typeof force === "boolean") {
+            reverse = force === true;
+        }
+
+        let method = reverse ? 'remove' : 'add';
+        let blur = !reverse ? 'remove' : 'add';
         this.menu.classList[method]('menu-hide');
         this.showMenu = reverse;
         this.container.classList[blur]('svg-blur');
@@ -130,8 +130,6 @@ class UI {
         this.getHashValue();
         this.getCurrent();
 
-        // the gallery is ready
-        // this.load();
     }
 
     getHashValue() {
@@ -195,6 +193,7 @@ class UI {
         let next = (index + inc) % len;
         next = next < 0 ? len : next;
 
+        this.toggle(false);
         this.setCurrent(next);
         this.load();
     };
@@ -278,10 +277,6 @@ class UI {
 
         menu.classList.add('menu');
         sketches.classList.add('menu-sketches', 'menu-hide', 'circles');
-        // toggle.classList.add('menu-toggle');
-        // toggle.onclick = this.toggle;
-
-        // menu.append(toggle);
         container.append(menu, sketches);
 
         Object.entries(nav).forEach(array => {
