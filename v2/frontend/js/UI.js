@@ -15,7 +15,7 @@ class UI {
         this.timer; // the timeout manager
         this.bg = 0; // the index for BG images
         this.initDelay = 5000; // the pause before minimal is applied
-        this.welcomeDelay = 8000; // auto start
+        this.welcomeDelay = 5000; // auto start
         this.highlightOn = true;
         this.showMenu = false;
         this.ws = ws;
@@ -81,7 +81,7 @@ class UI {
     };
 
     hanleOnClick = (e, onSuccess) => {
-        e.preventDefault();
+        // e.preventDefault();
         if (this.busy) return false;
 
         const el = e.currentTarget;
@@ -155,6 +155,7 @@ class UI {
         // flag the current sketch element
         this.current = Number(index);
         this.gallery[this.current].classList.add('current');
+        window.location.hash = this.current + 1;
         return this.current;
     }
 
@@ -182,7 +183,6 @@ class UI {
         let next = (index + inc) % len;
         next = next < 0 ? len : next;
 
-        window.location.hash = next + 1;
         this.setCurrent(next);
         this.load();
     };
@@ -196,6 +196,7 @@ class UI {
         }
 
         ws.send(`load:${current + 1}`);
+        this.setCurrent(current);
 
         console.log(
             'READY current:%s readyState:%s delay(%s)',
