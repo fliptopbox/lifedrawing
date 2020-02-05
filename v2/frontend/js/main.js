@@ -15,13 +15,17 @@ window.ui = ui;
 
 ws.onopen = handleOnOpen;
 ws.onerror = handleException;
-ws.onclose = handleException;
+ws.onclose = handleClose;
 ws.onmessage = handleMessage;
 
 function handleOnOpen() {
+    socketLog("Connected", host);
     ws.send('list');
 }
 
+function handleClose() {
+    socketLog("Closed", host);
+}
 function handleMessage(e) {
     const { data } = e;
     const string = data.decompress();
@@ -34,15 +38,21 @@ function handleMessage(e) {
             break;
 
         case 'list':
+            socketLog("Recieved list", json);
             ui.update(json.data);
             break;
 
         default:
-            console.warn('Unknown command [%s]', cmd);
+            socketLog("Unknown command", cmd);
             break;
     }
 }
 
 function handleException(e) {
+    alert("Hmmm, the server is misbehaving :(");
     console.warn('Something happend', e);
+}
+
+function socketLog(verb, message) {
+    console.log(`%c${verb}`, "background: black; padding: 5px;", message);
 }

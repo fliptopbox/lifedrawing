@@ -15,6 +15,7 @@ class UI {
         this.timer; // the timeout manager
         this.bg = 0; // the index for BG images
         this.initDelay = 5000; // the pause before minimal is applied
+        this.welcomeDelay = 8000; // auto start
         this.highlightOn = true;
         this.showMenu = false;
         this.ws = ws;
@@ -34,22 +35,34 @@ class UI {
     }
 
     initialize() {
+        // Give the user time of click,
+        // otherwise just start ...
+
+        const welcome = document.querySelector('.welcome');
+        welcome.onclick = () => {
+            document.documentElement.requestFullscreen();
+            this.renderFirstSketch();
+        };
+
+        this.timer = setTimeout(this.renderFirstSketch, this.welcomeDelay);
+    }
+
+    renderFirstSketch = () => {
         // make fullscreen interface
         // load the first sketch
         // show the labels for a while then
         // goto minimal view
 
-        const welcome = document.querySelector('.welcome');
+        clearTimeout(this.timer);
+
         const menu = document.querySelector('.menu');
         const minimal = () => menu.classList.add('minimal');
+        const welcome = document.querySelector('.welcome');
 
-        welcome.onclick = () => {
-            document.documentElement.requestFullscreen();
-            menu.classList.add('label-show');
-            welcome.parentNode.removeChild(welcome);
-            setTimeout(minimal, this.initDelay);
-            this.load();
-        };
+        menu.classList.add('label-show');
+        welcome.parentNode.removeChild(welcome);
+        setTimeout(minimal, this.initDelay);
+        this.load();
     }
 
     sketchComplete = () => {
@@ -82,7 +95,6 @@ class UI {
     toggle = () => {
         // show or hide the gallery menu
 
-        document.documentElement.requestFullscreen();
         const reverse = !this.showMenu;
         const method = reverse ? 'remove' : 'add';
         const blur = !reverse ? 'remove' : 'add';
@@ -130,10 +142,9 @@ class UI {
     setCurrent(index) {
         // catch wrapping index ie going backward from 0 to last index
         const el = this.gallery[index];
-        if(!el) {
+        if (!el) {
             index = this.gallery.length - 1;
         }
-        
 
         // remove previos element's "current" classname
         if (this.current !== null) {

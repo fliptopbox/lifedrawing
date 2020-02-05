@@ -1,19 +1,16 @@
 /* the parent container */
 .circles {
-    width: 80%;
-    /* margin: 10% auto; */
-    /* border: 1px solid; */
-    height: 50%;
     text-align: center;
+    display: flex;
+    flex-wrap: wrap;
+    justify-content: center;
 }
 
 /* common styling */
 .inline {
-    --color: #484845; font-size: 15px;
+    --color: #484845;
+    font-size: 15px;
     transform: scale(0.95);
-    display: inline-block;
-    vertical-align: middle;
-    padding: 0;
 }
 
 /* hide the size */
@@ -56,6 +53,7 @@
     background-size: 12em 12em;
     background-repeat: no-repeat;
     border-radius: 10em;
+    margin: auto;
 }
 
 .zero {
