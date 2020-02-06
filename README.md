@@ -11,10 +11,7 @@
 
 # lifedrawing
 
-This is a proof of concept project, to transport heavy
-data files to the client browser to render SVG images
-in a way that there is very little lag in response, and
-so that the user can experience the act of life drawing.
+This is a proof of concept project, to transport heavy data files to the client browser to render SVG images in a way that there is very little lag in response, and so that the user can experience the act of life drawing.
 
 ## Technologies:
 
@@ -24,11 +21,13 @@ so that the user can experience the act of life drawing.
 	WebSockets
 	SVG images
 	XML streaming
-	GIT (BitBucket)
+	GIT (GitHub)
 
-(w) http://fliptopbox.com/lifedrawing/
+[![](./screenshot.png)](http://lifedrawing.fliptopbox.com/#5)
+
+(w) http://lifedrawing.fliptopbox.com/
 
 (e) response.write@gmail.com
 
-(c) 2014 Bruce Thomas. All rights reserved.
+(c) 2020 Bruce Thomas. All rights reserved.
 
