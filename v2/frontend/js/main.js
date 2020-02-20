@@ -8,7 +8,10 @@ console.log(ascii);
 
 const localhost = /localhost/i.test(window.location.origin);
 const host = localhost ? 'localhost:5000/' : 'lifedrawing.herokuapp.com/';
-const ws = new WebSocket(`ws://${host}`);
+const {protocol} = window.location;
+const ssl = /s:$/.test(protocol)
+const prefix = ssl ? "wss" : "ws";
+const ws = new WebSocket(`${prefix}://${host}`);
 const ui = new UI(ws);
 
 window.ui = ui;
