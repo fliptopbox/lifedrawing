@@ -7,9 +7,6 @@
     },
     "author": "Bruce Thomas",
     "license": "BSD-2-Clause",
-    "engines": {
-        "node": "0.10.x"
-    },
     "dependencies": {
         "express": "^4.17.1",
         "websocket": "~1.0.8",
