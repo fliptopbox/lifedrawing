@@ -14,8 +14,8 @@ class UI {
         this.auto = 0; // delay in ms for auto-next
         this.timer; // the timeout manager
         this.bg = 0; // the index for BG images
-        this.initDelay = 5000; // the pause before minimal is applied
-        this.welcomeDelay = 5000; // auto start
+        this.initDelay = 7000; // the pause before minimal is applied
+        this.welcomeDelay = 250; // auto start
         this.highlightOn = true;
         this.showMenu = false;
         this.ws = ws;
@@ -283,9 +283,6 @@ class UI {
             const el = document.createElement('div');
             const [name, attrs] = array;
             const [value = '', fn] = attrs;
-
-            console.log(attrs);
-
             const text = value !== null ? value : '';
             el.classList.add('menu-' + name);
             el.onclick = fn;
