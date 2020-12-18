@@ -1,0 +1,15 @@
+.status {
+    position: fixed;
+    bottom: 0;
+    left: 0;
+    right: 0;
+    text-align: center;
+    margin: 10px;
+}
+
+.status span {
+    background: black;
+    color: white;
+    padding: 2px 16px 4px;
+    border-radius: 10px;
+}
