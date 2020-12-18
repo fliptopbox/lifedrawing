@@ -1,21 +1,17 @@
-import ascii from './ascii.js';
-import { decompress } from './lzw.js';
-import UI from './UI.js';
+import statusMessage from "./status.js";
+import ascii from "./ascii.js";
+import { decompress } from "./lzw.js";
+import UI from "./UI.js";
 
 String.prototype.decompress = decompress;
 
 console.log(ascii);
 
-// const ws = new WebSocket(`${prefix}://${host}`);
-// const ui = new UI(ws);
+const { protocol, origin } = window.location;
+const localhost = /localhost/i.test(origin);
+const host = localhost ? "localhost:5000/" : "lifedrawing.herokuapp.com/";
+const prefix = /s:$/.test(protocol) ? "wss" : "ws";
 
-const localhost = /localhost/i.test(window.location.origin);
-const host = localhost ? 'localhost:5000/' : 'lifedrawing.herokuapp.com/';
-const {protocol} = window.location;
-const ssl = /s:$/.test(protocol)
-const prefix = ssl ? "wss" : "ws";
-
-const status = document.querySelector("#status");
 const paths = document.querySelectorAll("path");
 
 let refresh;
@@ -24,7 +20,7 @@ let ui;
 
 applyRandomStrokes();
 
-fetch(`//${host}/`)
+fetch(`//${host}`)
     .then(onFetch)
     .then(onPayload)
     .then(onConnect)
@@ -46,25 +42,26 @@ function onPayload() {
 function onConnect(socket) {
     statusMessage("connect");
     ws = socket;
-    ui = new UI(ws);
 
+    ui = new UI(ws);
     window.ui = ui;
 
     ws.onmessage = handleMessage;
+    ws.onopen = handleOnOpen;
     ws.onerror = handleException;
     ws.onclose = handleClose;
-    ws.onopen = handleOnOpen;
 }
 
 function handleOnOpen() {
     statusMessage("download");
     socketLog("Connected", host);
-    ws.send('list');
+    ws.send("list");
 }
 
 function handleClose() {
     socketLog("Closed", host);
 }
+
 function handleMessage(e) {
     const { data } = e;
     const string = data.decompress();
@@ -72,13 +69,14 @@ function handleMessage(e) {
     const { cmd } = json;
 
     switch (cmd) {
-        case 'draw':
+        case "draw":
             ui.draw(json);
             break;
 
-        case 'list':
+        case "list":
             socketLog("Recieved list", json);
-            ui.update(json.data);
+            statusMessage("");
+            ui.initialize(json.data);
             break;
 
         default:
@@ -89,16 +87,16 @@ function handleMessage(e) {
 
 function handleException(e) {
     alert("Hmmm, the server is misbehaving :(");
-    console.warn('Something happend', e);
+    console.warn("Something happend", e);
 }
 
 function socketLog(verb, message) {
-    console.log(`%c${verb}`, "background: black; color: white; padding: 5px;", message);
+    console.log(
+        `%c${verb}`,
+        "background: black; color: white; padding: 5px;",
+        message
+    );
 }
-
-
-
-
 
 function applyRandomStrokes() {
     clearStrokes();
@@ -125,9 +123,3 @@ async function addClassName(el, i, name, ms = 150) {
         el.setAttributeNS(null, "class", value);
     }, i * ms);
 }
-
-function statusMessage(s) {
-    console.log(">>", s);
-    status.innerHTML = s;
-}
-

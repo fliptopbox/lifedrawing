@@ -1,14 +1,14 @@
-import Metadata from './Metadata.js';
-import SVG from './SVG.js';
-import highlights from './highlights.js';
+import Metadata from "./Metadata.js";
+import SVG from "./SVG.js";
+import highlights from "./highlights.js";
 
 class UI {
     constructor(ws) {
-        this.container = document.querySelector('#container');
+        this.container = document.querySelector("#container");
 
         this.gallery = [];
 
-        this.backgrounds = ['none', 'plywood', 'newsprint'];
+        this.backgrounds = ["none", "plywood", "newsprint"];
         this.current = null; // array index of current sketch
         this.busy = null; // prevent UI events while working
         this.auto = 0; // delay in ms for auto-next
@@ -26,25 +26,30 @@ class UI {
         this.menu = this.makeMenu(this.container, this.hanleOnClick);
         this.metadata = new Metadata(this.container);
 
-        this.svg.notify('ui', this.sketchComplete);
+        this.svg.notify("ui", this.sketchComplete);
         this.svg.handleClick(this.toggle);
-
-        this.initialize();
 
         window.UI = this;
     }
 
-    initialize() {
-        // Give the user time of click,
-        // otherwise just start ...
+    initialize(collection) {
+        // this is only called once
+        // and it is called when the socket gets
+        // the initial gallery payload
 
-        const welcome = document.querySelector('.welcome');
-        welcome.onclick = () => {
-            document.documentElement.requestFullscreen();
-            this.renderFirstSketch();
-        };
+        const callback = this.hanleOnClick;
+        const entries = Object.entries(collection);
+        const max = entries.reduce(
+            (acc, curr) => (curr[1].size > acc ? curr[1].size : acc),
+            0
+        );
+        const fn = (array) => this.sketchItems(array, max, callback);
+        this.gallery = entries.map(fn);
+        this.gallery.forEach((el) => this.menu.append(el));
 
-        this.timer = setTimeout(this.renderFirstSketch, this.welcomeDelay);
+        this.getHashValue();
+        this.getCurrent();
+        this.renderFirstSketch();
     }
 
     renderFirstSketch = () => {
@@ -55,19 +60,19 @@ class UI {
 
         clearTimeout(this.timer);
 
-        const menu = document.querySelector('.menu');
-        const minimal = () => menu.classList.add('minimal');
-        const welcome = document.querySelector('.welcome');
+        const menu = document.querySelector(".menu");
+        const minimal = () => menu.classList.add("minimal");
+        const welcome = document.querySelector(".welcome");
 
-        menu.classList.add('label-show');
+        menu.classList.add("label-show");
         welcome.parentNode.removeChild(welcome);
         setTimeout(minimal, this.initDelay);
         this.load();
-    }
+    };
 
     sketchComplete = () => {
         if (this.highlightOn) {
-            highlights(30, 0.5, '#000000cc');
+            highlights(30, 0.5, "#000000cc");
             highlights(20, 3);
             highlights(10, 15);
             highlights(5, 45);
@@ -89,7 +94,7 @@ class UI {
         // if the user clicks the current image
         // close the overlay. No re-load neccissary
 
-        if(Number(index) !== this.current) {
+        if (Number(index) !== this.current) {
             this.setCurrent(Number(index));
             this.load();
         }
@@ -104,40 +109,23 @@ class UI {
 
         let reverse = !this.showMenu;
 
-        if(typeof force === "boolean") {
+        if (typeof force === "boolean") {
             reverse = force === true;
         }
 
-        let method = reverse ? 'remove' : 'add';
-        let blur = !reverse ? 'remove' : 'add';
-        this.menu.classList[method]('menu-hide');
+        let method = reverse ? "remove" : "add";
+        let blur = !reverse ? "remove" : "add";
+        this.menu.classList[method]("menu-hide");
         this.showMenu = reverse;
-        this.container.classList[blur]('svg-blur');
+        this.container.classList[blur]("svg-blur");
     };
-
-    update(collection) {
-        // this is only called once
-        const callback = this.hanleOnClick;
-        const entries = Object.entries(collection);
-        const max = entries.reduce(
-            (acc, curr) => (curr[1].size > acc ? curr[1].size : acc),
-            0
-        );
-        const fn = array => this.sketchItems(array, max, callback);
-        this.gallery = entries.map(fn);
-        this.gallery.forEach(el => this.menu.append(el));
-
-        this.getHashValue();
-        this.getCurrent();
-
-    }
 
     getHashValue() {
         // the UI can be initialized by location.hash
         // the hash is the sketch number (ie. index + 1)
 
         const re = /^#(\d+)$/;
-        let hash = window.location.hash || '';
+        let hash = window.location.hash || "";
         hash = re.test(`${hash}`) ? hash : null;
 
         if (!hash) return null;
@@ -145,7 +133,7 @@ class UI {
         hash = Number(hash.match(re)[1]) - 1;
         hash = hash % this.gallery.length;
 
-        console.log('Initialize with index [%s]', hash);
+        console.log("Initialize with index [%s]", hash);
         this.current = hash;
     }
 
@@ -158,13 +146,13 @@ class UI {
 
         // remove previos element's "current" classname
         if (this.current !== null) {
-            this.gallery[this.current].classList.remove('current');
-            this.gallery[this.current].classList.add('menu-viewed');
+            this.gallery[this.current].classList.remove("current");
+            this.gallery[this.current].classList.add("menu-viewed");
         }
 
         // flag the current sketch element
         this.current = Number(index);
-        this.gallery[this.current].classList.add('current');
+        this.gallery[this.current].classList.add("current");
         window.location.hash = this.current + 1;
         return this.current;
     }
@@ -172,7 +160,7 @@ class UI {
     getCurrent() {
         let current = this.current || null;
         const no = ((Math.random() * this.gallery.length) >> 0) + 1;
-        current = typeof current === 'number' ? this.current : no;
+        current = typeof current === "number" ? this.current : no;
 
         return this.setCurrent(current);
     }
@@ -202,18 +190,12 @@ class UI {
         const { ws, current } = this;
 
         if (ws && ws.readyState !== 1) {
-            console.error('WebSocket not ready');
+            console.error("WebSocket not ready");
             return;
         }
 
         ws.send(`load:${current + 1}`);
         this.setCurrent(current);
-
-        console.log(
-            'READY current:%s readyState:%s delay(%s)',
-            current,
-            ws.readyState
-        );
     }
 
     draw(data) {
@@ -223,46 +205,46 @@ class UI {
     }
 
     makeMenu(container) {
-        const menu = document.createElement('div');
-        const sketches = document.createElement('div');
+        const menu = document.createElement("div");
+        const sketches = document.createElement("div");
         const showHighlights = this.highlightOn;
         const resetAutoPlay = () => {
             this.play(null);
-            document.querySelector('.label-play strong').innerHTML = 'play';
+            document.querySelector(".label-play strong").innerHTML = "play";
         };
 
         const nav = {
             highlights: [
-                showHighlights ? '(on)' : '(off)',
-                e => {
-                    const txt = e.currentTarget.querySelector('.label-name');
+                showHighlights ? "(on)" : "(off)",
+                (e) => {
+                    const txt = e.currentTarget.querySelector(".label-name");
                     this.highlightOn = !this.highlightOn;
                     txt.innerHTML =
-                        'highlights ' + (this.highlightOn ? '(on)' : '(off)');
-                }
+                        "highlights " + (this.highlightOn ? "(on)" : "(off)");
+                },
             ],
             next: [
                 null,
                 () => {
                     this.play(null);
                     this.next(1);
-                }
+                },
             ],
             play: [
                 null,
-                e => {
-                    const txt = e.currentTarget.querySelector('.label-name');
+                (e) => {
+                    const txt = e.currentTarget.querySelector(".label-name");
                     const delay = !this.auto ? 8000 : 0;
-                    txt.innerHTML = delay ? 'stop' : 'play';
+                    txt.innerHTML = delay ? "stop" : "play";
                     this.play(delay);
-                }
+                },
             ],
             previous: [
                 null,
                 () => {
                     resetAutoPlay();
                     this.next(-1);
-                }
+                },
             ],
             canvas: [
                 null,
@@ -270,21 +252,21 @@ class UI {
                     const bgs = this.backgrounds;
                     let index = (this.bg + 1) % bgs.length;
                     this.bg = index;
-                    document.querySelector('body').className = bgs[index];
-                }
-            ]
+                    document.querySelector("body").className = bgs[index];
+                },
+            ],
         };
 
-        menu.classList.add('menu');
-        sketches.classList.add('menu-sketches', 'menu-hide', 'circles');
+        menu.classList.add("menu");
+        sketches.classList.add("menu-sketches", "menu-hide", "circles");
         container.append(menu, sketches);
 
-        Object.entries(nav).forEach(array => {
-            const el = document.createElement('div');
+        Object.entries(nav).forEach((array) => {
+            const el = document.createElement("div");
             const [name, attrs] = array;
-            const [value = '', fn] = attrs;
-            const text = value !== null ? value : '';
-            el.classList.add('menu-' + name);
+            const [value = "", fn] = attrs;
+            const text = value !== null ? value : "";
+            el.classList.add("menu-" + name);
             el.onclick = fn;
             el.innerHTML = `<div class="label label-${name}">
                 <strong class="label-name">${name} ${text}</strong>
@@ -297,9 +279,9 @@ class UI {
 
     sketchItems([_, value], max, handleClick) {
         const { name, size, index, no } = value;
-        const a = document.createElement('a');
+        const a = document.createElement("a");
         const MBytes = Number(size / 1024 / 1024).toFixed(2);
-        const sizes = ['zero', 'one', 'two', 'three', 'four', 'five'];
+        const sizes = ["zero", "one", "two", "three", "four", "five"];
 
         const n = (Math.ceil((size / max) * 6) >> 0) - 1;
         const radius = sizes[n];
@@ -309,9 +291,9 @@ class UI {
         a.dataset.no = `${no}`;
         a.dataset.index = `${index}`;
         a.innerHTML = `<i>${no}</i>`;
-        a.classList.add('rings', 'inline', radius);
-        a.onclick = e => {
-            handleClick(e, () => a.classList.add('menu-viewed'));
+        a.classList.add("rings", "inline", radius);
+        a.onclick = (e) => {
+            handleClick(e, () => a.classList.add("menu-viewed"));
         };
 
         a.innerHTML = `
