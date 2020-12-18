@@ -1,8 +1,9 @@
-@import './metadata.css';
-@import './menu.css';
-@import './svg.css';
-@import './rings.css';
-@import './welcome.css';
+@import "./metadata.css";
+@import "./menu.css";
+@import "./svg.css";
+@import "./rings.css";
+@import "./welcome.css";
+@import "./status.css";
 
 html,
 body {
@@ -44,4 +45,3 @@ body.plywood {
     bottom: 0;
     overflow-y: auto;
 }
-
